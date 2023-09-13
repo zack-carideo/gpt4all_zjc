@@ -64,42 +64,123 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/csharp">:computer: Official C# Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/java">:computer: Official Java Bindings</a>
 
-### Integrations
+# Python GPT4All
+ (https://gpt4all.io/index.html) is an open-source project containing a number of pre-trained Large Language Models (LLMs) that you can use to run locally using consumer grade CPUs. GPT4All contains a number of models that ranges from 3GB to 8GB. What’s more exciting? It is free!
 
-* 🗃️ [Weaviate Vector Database](https://github.com/weaviate/weaviate) - [module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
+While the performance of GPT4All may not be on par with the current ChatGPT, with contributions from the open source community it has significant potentials for further development and enhancements. It may eventually be able to compete on the same level with commercial models like ChatGPT from OpenAI.
 
-## Contributing
-GPT4All welcomes contributions, involvement, and discussion from the open source community!
-Please see CONTRIBUTING.md and follow the issues, bug reports, and PR markdown templates.
+#### zjc local info 
+- **venv:** C:\Users\zjc10\Desktop\Projects\envs\gpt_all\Scripts\activate.ps1
+- **cmake local:** C:\Program Files\CMake\
+- **mingw64:** c:\msys64\mingw64\bin
+- **project folder:** C:\Users\zjc10\Desktop\Projects\code\gpt4_all
 
-Check project discord, with project owners, or through existing issues/PRs to avoid duplicate work.
-Please make sure to tag all of the above with relevant project identifiers or your contribution could potentially get lost.
-Example tags: `backend`, `bindings`, `python-bindings`, `documentation`, etc.
+# Installation Instructions
+This package contains a set of Python bindings around the `llmodel` C-API.
+- Package on PyPI: https://pypi.org/project/gpt4all/
+- Documentation: https://docs.gpt4all.io/gpt4all_python.html
 
-## Technical Reports
+## Pre-build Requirments 
 
-<p align="center">
-<a href="https://gpt4all.io/reports/GPT4All_Technical_Report_3.pdf">:green_book: Technical Report 3: GPT4All Snoozy and Groovy </a>
-</p>
+#### 0. Install MinGW64 
+- download exe to install mingw64
+    ```powershell
+    wget https://github.com/msys2/msys2-installer/releases/download/2023-05-26/msys2-x86_64-20230526.exe
+    ```
+- run installer and save MinGW64 to below default location (c:\msys64)
+    ```terminal 
+    c:\msys64
+    ```
+- When complete, ensure the Run MSYS2 now box is checked and select Finish. This will open a MSYS2 terminal window for you.
 
-<p align="center">
-<a href="https://static.nomic.ai/gpt4all/2023_GPT4All-J_Technical_Report_2.pdf">:green_book: Technical Report 2: GPT4All-J </a>
-</p>
+    - In this terminal, install the MinGW-w64 toolchain by running the following command and enter Y when prompted to proceed:
+        ```powershell
+        pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain
+        ```
 
-<p align="center">
-<a href="https://s3.amazonaws.com/static.nomic.ai/gpt4all/2023_GPT4All_Technical_Report.pdf">:green_book: Technical Report 1: GPT4All</a>
-</p>
+- Add the path of your MinGW-w64 bin folder to the Windows PATH environment variable by following the below steps (https://code.visualstudio.com/docs/cpp/config-mingw)
+    1. In the Windows search bar, type Settings to open your Windows Settings.
+    2. Search for Edit environment variables for your account.
+    3. In your User variables, select the Path variable and then select Edit.
+    4. Select New and add the MinGW-w64 destination folder you recorded during the installation process to the list. If you used the default settings above, then this will be the path: C:\msys64\ucrt64\bin.
+    5. Select OK to save the updated PATH. You will need to reopen any console windows for the new PATH location to be available
 
-## Citation
+- verify updated path variable correctly retains references to mingw utils
+    ```powershell
+    gcc --version
+    g++ --version
+    gdb --version
+    ```
 
-If you utilize this repository, models or data in a downstream project, please consider citing it with:
+#### 1. Install cmake (https://github.com/Kitware/CMake/releases/download/v3.27.4/cmake-3.27.4-windows-x86_64.msi)
+- run the msi installer 
+- select 'add cmake to the system path for ALL users'
+- install CMake to: C:\Program Files\CMake\
+- restart terminal and test path variable assignment ```>cmake```
+
+
+## Local Build Instructions
+
+**NOTE**: If you are doing this on a Windows machine, you must build the GPT4All backend using [MinGW64](https://www.mingw-w64.org/) compiler.
+
+### non windows install 
 ```
-@misc{gpt4all,
-  author = {Yuvanesh Anand and Zach Nussbaum and Brandon Duderstadt and Benjamin Schmidt and Andriy Mulyar},
-  title = {GPT4All: Training an Assistant-style Chatbot with Large Scale Data Distillation from GPT-3.5-Turbo},
-  year = {2023},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/nomic-ai/gpt4all}},
-}
+pip install gpt4all
 ```
+### windows Installation
+
+
+
+#### 1. Setup `llmodel` (navigate to folder you want to save project at)
+
+```
+git clone --recurse-submodules git@github.com:nomic-ai/gpt4all.git
+cd gpt4all/gpt4all-backend/
+mkdir build
+cd build
+cmake ..
+cmake --build . --parallel  # optionally append: --config Release
+```
+**WARNING**: Confirm that `libllmodel.*` exists in `gpt4all-backend/build` before proceeding
+
+#### 2. Setup Python package
+
+```
+cd ../../gpt4all-bindings/python
+pip3 install -e .
+```
+
+## Usage
+
+Test it out! In a Python script or console:
+
+```python
+from gpt4all import GPT4All
+model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin")
+output = model.generate("The capital of France is ", max_tokens=3)
+print(output)
+```
+
+
+GPU Usage
+```python
+from gpt4all import GPT4All
+model = GPT4All("orca-mini-3b.ggmlv3.q4_0.bin", device='gpu') # device='amd', device='intel'
+output = model.generate("The capital of France is ", max_tokens=3)
+print(output)
+```
+
+## Troubleshooting a Local Build
+- If you're on Windows and have compiled with a MinGW toolchain, you might run into an error like:
+  ```
+  FileNotFoundError: Could not find module '<...>\gpt4all-bindings\python\gpt4all\llmodel_DO_NOT_MODIFY\build\libllmodel.dll'
+  (or one of its dependencies). Try using the full path with constructor syntax.
+  ```
+  The key phrase in this case is _"or one of its dependencies"_. The Python interpreter you're using
+  probably doesn't see the MinGW runtime dependencies. At the moment, the following three are required:
+  `libgcc_s_seh-1.dll`, `libstdc++-6.dll` and `libwinpthread-1.dll`. You should copy them from MinGW
+  into a folder where Python will see them, preferably next to `libllmodel.dll`.
+
+- Note regarding the Microsoft toolchain: Compiling with MSVC is possible, but not the official way to
+  go about it at the moment. MSVC doesn't produce DLLs with a `lib` prefix, which the bindings expect.
+  You'd have to amend that yourself.
